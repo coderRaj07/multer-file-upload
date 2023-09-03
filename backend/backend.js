@@ -44,7 +44,33 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+
+//On frontend also we could only accept specific type of files 
+//by editing "accept" property <input type="file" accept="image/*" onChange={onInputChange}></input>
+
+//To filter in backend
+const fileFilter = (req, file, cb) => {
+  // Check file type or any other criteria here
+  // For example, allow only .jpg and .png files:
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "application/pdf" // Add more allowed types if needed
+  ) {
+    cb(null, true); // Accept the file
+  } else {
+    cb(new Error("Invalid file type"), false); // Reject the file
+  }
+};
+
+//limits and fileFilter are optional
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
+  fileFilter: fileFilter, // Apply the file filter
+});
+
+
 //@devnotes:: upload.single("file") the string value inside should be same as in frontend formData.append
 app.post("/upload-file", upload.single("file"), async (req, res) => {
   console.log(req.body);
